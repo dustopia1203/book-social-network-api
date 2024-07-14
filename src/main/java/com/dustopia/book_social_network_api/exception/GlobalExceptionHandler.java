@@ -1,6 +1,7 @@
 package com.dustopia.book_social_network_api.exception;
 
 import com.dustopia.book_social_network_api.model.response.ExceptionResponse;
+import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +21,15 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ExceptionResponse(LocalDate.now(),
                         "Validation failed! " + exception.getMessage(),
+                        request.getDescription(false)));
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<ExceptionResponse> handleException(MessagingException exception, WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ExceptionResponse(LocalDate.now(),
+                        "Mail sending error. " + exception.getMessage(),
                         request.getDescription(false)));
     }
 

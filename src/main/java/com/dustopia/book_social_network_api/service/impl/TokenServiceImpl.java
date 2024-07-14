@@ -23,7 +23,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public void saveToken(String email, String token) {
+    public void saveJwtToken(String email, String token) {
         tokenRepository.save(Token
                 .builder()
                 .email(email)

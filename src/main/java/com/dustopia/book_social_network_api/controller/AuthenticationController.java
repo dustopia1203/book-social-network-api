@@ -6,6 +6,7 @@ import com.dustopia.book_social_network_api.model.entity.User;
 import com.dustopia.book_social_network_api.model.request.RegisterRequest;
 import com.dustopia.book_social_network_api.model.response.AuthenticationResponse;
 import com.dustopia.book_social_network_api.service.AuthenticationService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -37,7 +38,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<UserDto> registerNewUser(
             @RequestBody @Valid RegisterRequest registerRequest
-            ) {
+            ) throws MessagingException {
         UserDto userDto = authenticationService.registerNewUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
     }

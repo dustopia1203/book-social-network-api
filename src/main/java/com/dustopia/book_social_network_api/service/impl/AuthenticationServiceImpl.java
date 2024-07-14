@@ -1,19 +1,24 @@
 package com.dustopia.book_social_network_api.service.impl;
 
+import com.dustopia.book_social_network_api.model.entity.Token;
 import com.dustopia.book_social_network_api.model.request.LoginRequest;
 import com.dustopia.book_social_network_api.model.dto.UserDto;
 import com.dustopia.book_social_network_api.model.entity.User;
 import com.dustopia.book_social_network_api.model.mapper.UserMapper;
 import com.dustopia.book_social_network_api.model.request.RegisterRequest;
 import com.dustopia.book_social_network_api.model.response.AuthenticationResponse;
+import com.dustopia.book_social_network_api.repository.TokenRepository;
 import com.dustopia.book_social_network_api.repository.UserRepository;
 import com.dustopia.book_social_network_api.security.jwt.JwtService;
 import com.dustopia.book_social_network_api.service.AuthenticationService;
+import com.dustopia.book_social_network_api.service.EmailService;
 import com.dustopia.book_social_network_api.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +50,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final TokenService tokenService;
 
+    private final TokenRepository tokenRepository;
+
+    private final EmailService emailService;
+
+    @Value("${app.mailing.frontend.activation-url}")
+    private String activateUrl;
+
     @Override
     public AuthenticationResponse loginAndAuthenticate(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
@@ -51,7 +64,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String jwt = jwtService.generateToken(userDetailsService.loadUserByUsername(loginRequest.email()));
             String refreshToken = jwtService.generateRefreshToken(userDetailsService.loadUserByUsername(loginRequest.email()));
             tokenService.revokeAllTokensOfUser(loginRequest.email());
-            tokenService.saveToken(loginRequest.email(), jwt);
+            tokenService.saveJwtToken(loginRequest.email(), jwt);
             return new AuthenticationResponse(jwt, refreshToken);
         } else {
             throw new UsernameNotFoundException("Invalid credentials");
@@ -59,7 +72,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public UserDto registerNewUser(RegisterRequest registerRequest) {
+    public UserDto registerNewUser(RegisterRequest registerRequest) throws MessagingException {
         if (userRepository.existsByEmail(registerRequest.email())) {
             throw new RuntimeException("Username existed");
         }
@@ -78,8 +91,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return userMapper.toUserDto(user);
     }
 
-    private void sendValidationEmail(User user) {
+    private void sendValidationEmail(User user) throws MessagingException {
+        String activationToken = generateAndSaveActivationToken(user);
+        emailService.sendEmail(
+                user.getEmail(),
+                user.getFullName(),
+                "Account activation",
+                "active_account",
+                activateUrl,
+                activationToken
+        );
+    }
 
+    private String generateAndSaveActivationToken(User user) {
+        String activationToken = generateActivationCode(6);
+        Token token = Token
+                .builder()
+                .email(user.getEmail())
+                .type("ACTIVATION")
+                .token(activationToken)
+                .isRevoked(false)
+                .build();
+        tokenRepository.save(token);
+        return activationToken;
+    }
+
+    private String generateActivationCode(int length) {
+        String characters = "0123456789";
+        StringBuilder activationCode = new StringBuilder();
+        SecureRandom random = new SecureRandom();
+        for (int i = 0; i < length; i++) {
+            int randomIndex = random.nextInt(characters.length());
+            activationCode.append(characters.charAt(randomIndex));
+        }
+        return activationCode.toString();
     }
 
     @Override
@@ -95,7 +140,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             if (userDetails != null && jwtService.isTokenValid(refreshToken)) {
                 String accessToken = jwtService.generateToken(userDetails);
                 tokenService.revokeAllTokensOfUser(username);
-                tokenService.saveToken(username, accessToken);
+                tokenService.saveJwtToken(username, accessToken);
                 AuthenticationResponse authResponse = new AuthenticationResponse(accessToken, refreshToken);
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }

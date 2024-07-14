@@ -7,6 +7,6 @@ public interface TokenService {
 
     void revokeAllTokensOfUser(String email);
 
-    void saveToken(String username, String token);
+    void saveJwtToken(String email, String token);
 
 }
