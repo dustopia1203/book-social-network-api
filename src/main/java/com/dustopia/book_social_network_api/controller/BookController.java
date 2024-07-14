@@ -107,7 +107,7 @@ public class BookController {
                 .body(new ResponseObject("success", books));
     }
 
-    @PostMapping("/{id}/upload-cover")
+    @PutMapping("/{id}/upload-cover")
     public ResponseEntity<ResponseObject> uploadBookCover(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
@@ -119,7 +119,7 @@ public class BookController {
                 .body(new ResponseObject("success", bookDto));
     }
 
-    @PostMapping("/{id}/upload")
+    @PutMapping("/{id}/upload")
     public ResponseEntity<ResponseObject> uploadBook(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
