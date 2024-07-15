@@ -24,4 +24,5 @@ public interface AuthenticationService {
             HttpServletResponse response
     ) throws IOException;
 
+    void activeAccount(String token) throws MessagingException;
 }

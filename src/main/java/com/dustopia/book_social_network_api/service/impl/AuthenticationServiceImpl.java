@@ -28,9 +28,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -145,6 +147,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }
+    }
+
+    @Override
+    public void activeAccount(String token) throws MessagingException {
+        Token activationToken = tokenRepository
+                .findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+        User user = userRepository
+                .findByEmail(activationToken.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid email"));
+        if (LocalDateTime.now().isAfter(activationToken.getCreatedAt().plusHours(1))) {
+            activationToken.setRevoked(true);
+            tokenRepository.save(activationToken);
+            sendValidationEmail(user);
+            throw new RuntimeException("Activation token expired! New activation code has been sent");
+        }
+        user.setEnabled(true);
+        userRepository.save(user);
     }
 
 }

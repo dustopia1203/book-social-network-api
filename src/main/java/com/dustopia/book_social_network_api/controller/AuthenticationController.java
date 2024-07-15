@@ -13,10 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -29,7 +26,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> loginAndAuthenticate(
-            @RequestBody LoginRequest loginRequest
+            @RequestBody @Valid LoginRequest loginRequest
     ) {
         AuthenticationResponse authResponse = authenticationService.loginAndAuthenticate(loginRequest);
         return ResponseEntity.status(HttpStatus.OK).body(authResponse);
@@ -41,6 +38,13 @@ public class AuthenticationController {
             ) throws MessagingException {
         UserDto userDto = authenticationService.registerNewUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
+    }
+
+    @GetMapping("/activate-account")
+    public void activeAccount(
+            @RequestParam String token
+    ) throws MessagingException {
+        authenticationService.activeAccount(token);
     }
 
     @PostMapping("/refresh-token")
