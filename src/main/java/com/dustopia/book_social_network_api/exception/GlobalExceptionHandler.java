@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
                 request.getDescription(false)
         );
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ResponseObject("failed", exceptionData));
     }
 

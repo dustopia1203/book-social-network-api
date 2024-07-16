@@ -4,6 +4,7 @@ import com.dustopia.book_social_network_api.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -33,6 +34,11 @@ public class AppConfiguration {
     @Bean
     public AuthenticationManager authenticationManager() {
         return new ProviderManager(authenticationProvider());
+    }
+
+    @Bean
+    public AuditorAware<Long> auditorAware() {
+        return new AppAuditAware();
     }
 
 }
