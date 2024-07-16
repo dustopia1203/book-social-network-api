@@ -57,6 +57,13 @@ public class User {
     )
     private List<FeedBack> feedBacks;
 
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<BookTransaction> bookTransaction;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;
