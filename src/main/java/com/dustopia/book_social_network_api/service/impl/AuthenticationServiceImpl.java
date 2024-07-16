@@ -6,7 +6,8 @@ import com.dustopia.book_social_network_api.model.dto.UserDto;
 import com.dustopia.book_social_network_api.model.entity.User;
 import com.dustopia.book_social_network_api.model.mapper.UserMapper;
 import com.dustopia.book_social_network_api.model.request.RegisterRequest;
-import com.dustopia.book_social_network_api.model.response.AuthenticationResponse;
+import com.dustopia.book_social_network_api.model.response.AuthenticationData;
+import com.dustopia.book_social_network_api.model.response.ResponseObject;
 import com.dustopia.book_social_network_api.repository.TokenRepository;
 import com.dustopia.book_social_network_api.repository.UserRepository;
 import com.dustopia.book_social_network_api.security.jwt.JwtService;
@@ -60,14 +61,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private String activateUrl;
 
     @Override
-    public AuthenticationResponse loginAndAuthenticate(LoginRequest loginRequest) {
+    public AuthenticationData loginAndAuthenticate(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
         if (authentication.isAuthenticated()) {
             String jwt = jwtService.generateToken(userDetailsService.loadUserByUsername(loginRequest.email()));
             String refreshToken = jwtService.generateRefreshToken(userDetailsService.loadUserByUsername(loginRequest.email()));
             tokenService.revokeAllTokensOfUser(loginRequest.email());
             tokenService.saveJwtToken(loginRequest.email(), jwt);
-            return new AuthenticationResponse(jwt, refreshToken);
+            return new AuthenticationData(jwt, refreshToken);
         } else {
             throw new UsernameNotFoundException("Invalid credentials");
         }
@@ -143,13 +144,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 String accessToken = jwtService.generateToken(userDetails);
                 tokenService.revokeAllTokensOfUser(username);
                 tokenService.saveJwtToken(username, accessToken);
-                AuthenticationResponse authResponse = new AuthenticationResponse(accessToken, refreshToken);
-                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+                AuthenticationData authenticationData = new AuthenticationData(accessToken, refreshToken);
+                ResponseObject responseObject = new ResponseObject("success", authenticationData);
+                new ObjectMapper().writeValue(response.getOutputStream(), responseObject);
             }
         }
     }
 
     @Override
+    @Transactional
     public void activeAccount(String token) throws MessagingException {
         Token activationToken = tokenRepository
                 .findByToken(token)
@@ -163,7 +166,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             sendValidationEmail(user);
             throw new RuntimeException("Activation token expired! New activation code has been sent");
         }
+        activationToken.setRevoked(true);
         user.setEnabled(true);
+        tokenRepository.save(activationToken);
         userRepository.save(user);
     }
 

@@ -2,9 +2,9 @@ package com.dustopia.book_social_network_api.controller;
 
 import com.dustopia.book_social_network_api.model.request.LoginRequest;
 import com.dustopia.book_social_network_api.model.dto.UserDto;
-import com.dustopia.book_social_network_api.model.entity.User;
 import com.dustopia.book_social_network_api.model.request.RegisterRequest;
-import com.dustopia.book_social_network_api.model.response.AuthenticationResponse;
+import com.dustopia.book_social_network_api.model.response.AuthenticationData;
+import com.dustopia.book_social_network_api.model.response.ResponseObject;
 import com.dustopia.book_social_network_api.service.AuthenticationService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,19 +25,23 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> loginAndAuthenticate(
+    public ResponseEntity<ResponseObject> loginAndAuthenticate(
             @RequestBody @Valid LoginRequest loginRequest
     ) {
-        AuthenticationResponse authResponse = authenticationService.loginAndAuthenticate(loginRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(authResponse);
+        AuthenticationData authenticationData = authenticationService.loginAndAuthenticate(loginRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", authenticationData));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerNewUser(
+    public ResponseEntity<ResponseObject> registerNewUser(
             @RequestBody @Valid RegisterRequest registerRequest
             ) throws MessagingException {
         UserDto userDto = authenticationService.registerNewUser(registerRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ResponseObject("success", userDto));
     }
 
     @GetMapping("/activate-account")

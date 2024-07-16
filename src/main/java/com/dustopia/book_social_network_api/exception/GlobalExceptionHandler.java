@@ -1,6 +1,7 @@
 package com.dustopia.book_social_network_api.exception;
 
-import com.dustopia.book_social_network_api.model.response.ExceptionResponse;
+import com.dustopia.book_social_network_api.model.response.ExceptionData;
+import com.dustopia.book_social_network_api.model.response.ResponseObject;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,39 +17,47 @@ import java.time.LocalDate;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
+    public ResponseEntity<ResponseObject> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
+                "Validation failed! " + exception.getMessage(),
+                request.getDescription(false)
+        );
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionResponse(LocalDate.now(),
-                        "Validation failed! " + exception.getMessage(),
-                        request.getDescription(false)));
+                .body(new ResponseObject("failed", exceptionData));
     }
 
     @ExceptionHandler(MessagingException.class)
-    public ResponseEntity<ExceptionResponse> handleException(MessagingException exception, WebRequest request) {
+    public ResponseEntity<ResponseObject> handleException(MessagingException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
+                "Mail sending error. " + exception.getMessage(),
+                request.getDescription(false)
+        );
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ExceptionResponse(LocalDate.now(),
-                        "Mail sending error. " + exception.getMessage(),
-                        request.getDescription(false)));
+                .body(new ResponseObject("failed", exceptionData));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ExceptionResponse> handleUsernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
+    public ResponseEntity<ResponseObject> handleUsernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
+                exception.getMessage() + ". Email not exist",
+                request.getDescription(false)
+        );
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionResponse(LocalDate.now(),
-                        exception.getMessage() + ". Email not exist",
-                        request.getDescription(false)));
+                .body(new ResponseObject("failed", exceptionData));
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ExceptionResponse> handleException(RuntimeException exception, WebRequest request) {
+    public ResponseEntity<ResponseObject> handleException(RuntimeException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
+                exception.getMessage(),
+                request.getDescription(false)
+        );
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionResponse(LocalDate.now(),
-                        exception.getMessage(),
-                        request.getDescription(false)));
+                .body(new ResponseObject("failed", exceptionData));
     }
 
 }
