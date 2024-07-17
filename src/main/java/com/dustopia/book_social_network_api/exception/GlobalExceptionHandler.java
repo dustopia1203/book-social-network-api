@@ -3,6 +3,7 @@ package com.dustopia.book_social_network_api.exception;
 import com.dustopia.book_social_network_api.model.response.ExceptionData;
 import com.dustopia.book_social_network_api.model.response.ResponseObject;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,7 +29,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MessagingException.class)
-    public ResponseEntity<ResponseObject> handleException(MessagingException exception, WebRequest request) {
+    public ResponseEntity<ResponseObject> handleMessageException(MessagingException exception, WebRequest request) {
         ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
                 "Mail sending error. " + exception.getMessage(),
                 request.getDescription(false)
@@ -41,7 +42,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ResponseObject> handleUsernameNotFoundException(UsernameNotFoundException exception, WebRequest request) {
         ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
-                exception.getMessage() + ". Email not exist",
+                exception.getMessage(),
+                request.getDescription(false)
+        );
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseObject("failed", exceptionData));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ResponseObject> handleEntityNotFoundException(EntityNotFoundException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
+                exception.getMessage(),
+                request.getDescription(false)
+        );
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseObject("failed", exceptionData));
+    }
+
+    @ExceptionHandler(BookUnavailableException.class)
+    public ResponseEntity<ResponseObject> handleBookUnavailableException(BookUnavailableException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(LocalDate.now(),
+                exception.getMessage(),
                 request.getDescription(false)
         );
         return ResponseEntity
@@ -56,7 +79,7 @@ public class GlobalExceptionHandler {
                 request.getDescription(false)
         );
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseObject("failed", exceptionData));
     }
 

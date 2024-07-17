@@ -20,7 +20,7 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "tbl_feedback")
 public class FeedBack extends BaseObject {
 
-    private Double start;
+    private Double star;
 
     private String comment;
 

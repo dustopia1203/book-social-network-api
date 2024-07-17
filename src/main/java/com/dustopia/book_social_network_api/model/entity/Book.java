@@ -43,6 +43,29 @@ public class Book extends BaseObject {
             orphanRemoval = true
     )
     @JsonManagedReference
+    private List<FeedBack> feedBacks;
+
+    @OneToMany(
+            mappedBy = "book",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @JsonManagedReference
     private List<BookTransaction> bookTransaction;
+
+    @Transient
+    public Double getRate() {
+        if (feedBacks == null || feedBacks.isEmpty())  {
+            return 0.0;
+        }
+        double rate = feedBacks
+                .stream()
+                .mapToDouble(FeedBack::getStar)
+                .average()
+                .orElse(0.0);
+        double roundedRate;
+        roundedRate = Math.round(rate * 10.0) / 10.0;
+        return roundedRate;
+    }
 
 }
