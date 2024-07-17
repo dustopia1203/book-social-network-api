@@ -1,5 +1,7 @@
 package com.dustopia.book_social_network_api.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +24,7 @@ public class Book extends BaseObject {
 
     private String author;
 
-    private String isbn;
+    private String synopsis;
 
     private String bookCover;
 
@@ -32,6 +34,7 @@ public class Book extends BaseObject {
 
     @ManyToOne
     @JoinColumn(name = "userId")
+    @JsonBackReference
     private User user;
 
     @OneToMany(
@@ -39,6 +42,7 @@ public class Book extends BaseObject {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<BookTransaction> bookTransaction;
 
 }

@@ -1,11 +1,13 @@
 package com.dustopia.book_social_network_api.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -48,6 +50,7 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<Book> books;
 
     @OneToMany(
@@ -55,6 +58,7 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<FeedBack> feedBacks;
 
     @OneToMany(
@@ -62,6 +66,7 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<BookTransaction> bookTransaction;
 
     @CreatedDate
@@ -71,6 +76,10 @@ public class User {
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
+
+    @LastModifiedBy
+    @Column(insertable = false)
+    private LocalDateTime lastModifiedBy;
 
     public String getFullName() {
         return firstName + " " + lastName;

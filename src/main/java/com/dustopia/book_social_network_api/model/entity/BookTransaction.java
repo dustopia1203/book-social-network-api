@@ -1,5 +1,6 @@
 package com.dustopia.book_social_network_api.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,10 +26,12 @@ public class BookTransaction {
 
     @ManyToOne
     @JoinColumn(name = "userId")
+    @JsonBackReference
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "bookId")
+    @JsonBackReference
     private Book book;
 
     @CreatedDate
