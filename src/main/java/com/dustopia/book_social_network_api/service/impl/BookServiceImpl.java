@@ -5,16 +5,21 @@ import com.dustopia.book_social_network_api.model.dto.BookDto;
 import com.dustopia.book_social_network_api.model.entity.Book;
 import com.dustopia.book_social_network_api.model.entity.User;
 import com.dustopia.book_social_network_api.model.mapper.BookMapper;
+import com.dustopia.book_social_network_api.model.response.PageData;
 import com.dustopia.book_social_network_api.repository.BookRepository;
-import com.dustopia.book_social_network_api.repository.BookRequest;
+import com.dustopia.book_social_network_api.model.request.BookRequest;
 import com.dustopia.book_social_network_api.security.CustomUserDetails;
 import com.dustopia.book_social_network_api.service.BookService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +50,26 @@ public class BookServiceImpl implements BookService {
             }
         }
         return bookMapper.toBookDto(book);
+    }
+
+    @Override
+    public PageData<BookDto> findAllDisplayableBooks(int page, int size, Authentication connectedUser) {
+        User user = ((CustomUserDetails) connectedUser.getPrincipal()).getUser();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<Book> books = bookRepository.findAllDisplayableBooks(pageable, user.getId());
+        List<BookDto> bookDtos = books
+                .stream()
+                .map(bookMapper::toBookDto)
+                .toList();
+        return new PageData<>(
+                bookDtos,
+                books.getNumber(),
+                books.getSize(),
+                books.getTotalElements(),
+                books.getTotalPages(),
+                books.isFirst(),
+                books.isLast()
+        );
     }
 
 }

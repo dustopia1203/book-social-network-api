@@ -4,7 +4,7 @@ public record BookDto(
         String title,
         String author,
         String synopsis,
-        String bookCover,
+        String bookCoverUrl,
         String user,
         Double rate
 ) {

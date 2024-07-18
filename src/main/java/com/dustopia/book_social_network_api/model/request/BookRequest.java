@@ -1,4 +1,4 @@
-package com.dustopia.book_social_network_api.repository;
+package com.dustopia.book_social_network_api.model.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

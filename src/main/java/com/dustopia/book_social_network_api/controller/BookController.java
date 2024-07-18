@@ -1,8 +1,9 @@
 package com.dustopia.book_social_network_api.controller;
 
 import com.dustopia.book_social_network_api.model.dto.BookDto;
+import com.dustopia.book_social_network_api.model.response.PageData;
 import com.dustopia.book_social_network_api.model.response.ResponseObject;
-import com.dustopia.book_social_network_api.repository.BookRequest;
+import com.dustopia.book_social_network_api.model.request.BookRequest;
 import com.dustopia.book_social_network_api.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,18 @@ public class BookController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ResponseObject("success", bookDto));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ResponseObject> getAllDisplayableBooks(
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size,
+            Authentication connectedUser
+    ) {
+        PageData<BookDto> books = bookService.findAllDisplayableBooks(page, size, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", books));
     }
 
 }

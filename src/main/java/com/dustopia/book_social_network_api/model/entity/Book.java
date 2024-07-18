@@ -26,9 +26,9 @@ public class Book extends BaseObject {
 
     private String synopsis;
 
-    private String bookCover;
+    private String bookCoverUrl;
 
-    private boolean isArchived;
+    private String url;
 
     private boolean isShareable;
 

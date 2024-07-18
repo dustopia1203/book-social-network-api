@@ -2,7 +2,7 @@ package com.dustopia.book_social_network_api.model.mapper;
 
 import com.dustopia.book_social_network_api.model.dto.BookDto;
 import com.dustopia.book_social_network_api.model.entity.Book;
-import com.dustopia.book_social_network_api.repository.BookRequest;
+import com.dustopia.book_social_network_api.model.request.BookRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +15,7 @@ public class BookMapper {
                 .author(bookRequest.author())
                 .synopsis(bookRequest.synopsis())
                 .isShareable(bookRequest.isShareable())
-                .isArchived(false)
+                .url(null)
                 .build();
     }
 
@@ -24,7 +24,7 @@ public class BookMapper {
                 book.getTitle(),
                 book.getAuthor(),
                 book.getSynopsis(),
-                book.getBookCover(),
+                book.getBookCoverUrl(),
                 book.getUser().getFullName(),
                 book.getRate()
         );
