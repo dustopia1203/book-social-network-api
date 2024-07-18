@@ -56,7 +56,27 @@ public class BookServiceImpl implements BookService {
     public PageData<BookDto> findAllDisplayableBooks(int page, int size, Authentication connectedUser) {
         User user = ((CustomUserDetails) connectedUser.getPrincipal()).getUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<Book> books = bookRepository.findAllDisplayableBooks(pageable, user.getId());
+        Page<Book> books = bookRepository.findAllDisplayableBooks(user.getId(), pageable);
+        List<BookDto> bookDtos = books
+                .stream()
+                .map(bookMapper::toBookDto)
+                .toList();
+        return new PageData<>(
+                bookDtos,
+                books.getNumber(),
+                books.getSize(),
+                books.getTotalElements(),
+                books.getTotalPages(),
+                books.isFirst(),
+                books.isLast()
+        );
+    }
+
+    @Override
+    public PageData<BookDto> findAllBooksByOwner(int page, int size, Authentication connectedUser) {
+        User user = ((CustomUserDetails) connectedUser.getPrincipal()).getUser();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<Book> books = bookRepository.findAllBooksByOwner(user.getId(), pageable);
         List<BookDto> bookDtos = books
                 .stream()
                 .map(bookMapper::toBookDto)

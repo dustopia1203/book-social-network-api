@@ -15,4 +15,5 @@ public interface BookService {
 
     PageData<BookDto> findAllDisplayableBooks(int page, int size, Authentication connectedUser);
 
+    PageData<BookDto> findAllBooksByOwner(int page, int size, Authentication connectedUser);
 }
