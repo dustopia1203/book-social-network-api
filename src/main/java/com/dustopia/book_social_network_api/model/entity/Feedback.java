@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Entity
 @Table(name = "tbl_feedback")
-public class FeedBack extends BaseObject {
+public class Feedback extends BaseObject {
 
     private Double star;
 

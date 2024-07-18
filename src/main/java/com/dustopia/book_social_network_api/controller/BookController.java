@@ -5,6 +5,7 @@ import com.dustopia.book_social_network_api.model.response.PageData;
 import com.dustopia.book_social_network_api.model.response.ResponseObject;
 import com.dustopia.book_social_network_api.model.request.BookRequest;
 import com.dustopia.book_social_network_api.service.BookService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
+@Tag(name = "Book")
 public class BookController {
 
     private final BookService bookService;
@@ -75,6 +77,30 @@ public class BookController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ResponseObject("success", bookDto));
+    }
+
+    @GetMapping("/owner")
+    public ResponseEntity<ResponseObject> getAllBooksByOwner(
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size,
+            Authentication connectedUser
+    ) {
+        PageData<BookDto> books = bookService.findAllBooksByOwner(page, size, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", books));
+    }
+
+    @GetMapping("/purchased")
+    public ResponseEntity<ResponseObject> getAllPurchasedBooks(
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size,
+            Authentication connectedUser
+    ) {
+        PageData<BookDto> books = bookService.findAllPurchasedBooks(page, size, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", books));
     }
 
     @PostMapping("/{id}/upload-cover")

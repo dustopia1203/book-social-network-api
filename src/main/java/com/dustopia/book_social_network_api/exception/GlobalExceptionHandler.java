@@ -20,6 +20,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(OperationNotPermittedException.class)
+    public ResponseEntity<ResponseObject> handleOperationNotPermittedException(OperationNotPermittedException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(
+                LocalDate.now(),
+                exception.getMessage(),
+                request.getDescription(false)
+        );
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ResponseObject("failed", exceptionData));
+    }
+
     @ExceptionHandler(CloudinaryUploadException.class)
     public ResponseEntity<ResponseObject> handleCloudinaryUploadException(CloudinaryUploadException exception, WebRequest request) {
         ExceptionData exceptionData = new ExceptionData(

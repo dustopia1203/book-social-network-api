@@ -43,7 +43,7 @@ public class Book extends BaseObject {
             orphanRemoval = true
     )
     @JsonManagedReference
-    private List<FeedBack> feedBacks;
+    private List<Feedback> feedbacks;
 
     @OneToMany(
             mappedBy = "book",
@@ -55,12 +55,12 @@ public class Book extends BaseObject {
 
     @Transient
     public Double getRate() {
-        if (feedBacks == null || feedBacks.isEmpty())  {
+        if (feedbacks == null || feedbacks.isEmpty())  {
             return 0.0;
         }
-        double rate = feedBacks
+        double rate = feedbacks
                 .stream()
-                .mapToDouble(FeedBack::getStar)
+                .mapToDouble(Feedback::getStar)
                 .average()
                 .orElse(0.0);
         double roundedRate;

@@ -59,7 +59,7 @@ public class User {
             orphanRemoval = true
     )
     @JsonManagedReference
-    private List<FeedBack> feedBacks;
+    private List<Feedback> feedbacks;
 
     @OneToMany(
             mappedBy = "user",
