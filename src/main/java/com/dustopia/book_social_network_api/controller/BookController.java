@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/books")
@@ -71,6 +72,18 @@ public class BookController {
             Authentication connectedUser
     ) {
         BookDto bookDto = bookService.deleteBookById(id, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", bookDto));
+    }
+
+    @PostMapping("/{id}/upload-cover")
+    public ResponseEntity<ResponseObject> uploadBookCover(
+            @PathVariable Long id,
+            @RequestParam("file")MultipartFile file,
+            Authentication connectedUser
+    ) {
+        BookDto bookDto = bookService.uploadBookCover(id, file, connectedUser);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ResponseObject("success", bookDto));

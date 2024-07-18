@@ -20,6 +20,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(CloudinaryUploadException.class)
+    public ResponseEntity<ResponseObject> handleCloudinaryUploadException(CloudinaryUploadException exception, WebRequest request) {
+        ExceptionData exceptionData = new ExceptionData(
+                LocalDate.now(),
+                exception.getMessage(),
+                request.getDescription(false)
+        );
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ResponseObject("failed", exceptionData));
+    }
+
     @ExceptionHandler(PermissionDeniedAccessException.class)
     public ResponseEntity<ResponseObject> handlePermissionDeniedAccessException(PermissionDeniedAccessException exception, WebRequest request) {
         ExceptionData exceptionData = new ExceptionData(

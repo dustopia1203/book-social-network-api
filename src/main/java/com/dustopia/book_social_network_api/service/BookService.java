@@ -5,6 +5,7 @@ import com.dustopia.book_social_network_api.model.response.PageData;
 import com.dustopia.book_social_network_api.model.request.BookRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public interface BookService {
@@ -22,4 +23,6 @@ public interface BookService {
     BookDto updateBookById(Long id, BookRequest bookRequest, Authentication connectedUser);
 
     BookDto deleteBookById(Long id, Authentication connectedUser);
+
+    BookDto uploadBookCover(Long id, MultipartFile file, Authentication connectedUser);
 }

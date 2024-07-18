@@ -1,6 +1,9 @@
 package com.dustopia.book_social_network_api.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.dustopia.book_social_network_api.exception.BookUnavailableException;
+import com.dustopia.book_social_network_api.exception.CloudinaryUploadException;
 import com.dustopia.book_social_network_api.exception.PermissionDeniedAccessException;
 import com.dustopia.book_social_network_api.model.dto.BookDto;
 import com.dustopia.book_social_network_api.model.entity.Book;
@@ -21,8 +24,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +39,8 @@ public class BookServiceImpl implements BookService {
     private final BookTransactionRepository bookTransactionRepository;
 
     private final BookMapper bookMapper;
+
+    private final Cloudinary cloudinary;
 
     @Override
     public BookDto addBook(BookRequest bookRequest, Authentication connectedUser) {
@@ -145,6 +153,26 @@ public class BookServiceImpl implements BookService {
         }
         bookRepository.deleteById(id);
         return bookMapper.toBookDto(book);
+    }
+
+    @Override
+    public BookDto uploadBookCover(Long id, MultipartFile file, Authentication connectedUser) {
+        User user = ((CustomUserDetails) connectedUser.getPrincipal()).getUser();
+        Book book = bookRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book is not found with id " + id));
+        if (!user.getId().equals(book.getUser().getId())) {
+            throw new PermissionDeniedAccessException("Current user don't have permission to do this action");
+        }
+        try {
+            Map result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap("folder", "book-covers"));
+            String bookCoverUrl = (String) result.get("url");
+            book.setBookCoverUrl(bookCoverUrl);
+            bookRepository.save(book);
+            return bookMapper.toBookDto(book);
+        } catch (IOException e) {
+            throw new CloudinaryUploadException("Image uploader service occurred error " + e.getMessage());
+        }
     }
 
 }
