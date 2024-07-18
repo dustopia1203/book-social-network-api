@@ -16,4 +16,10 @@ public interface BookService {
     PageData<BookDto> findAllDisplayableBooks(int page, int size, Authentication connectedUser);
 
     PageData<BookDto> findAllBooksByOwner(int page, int size, Authentication connectedUser);
+
+    PageData<BookDto> findAllPurchasedBooks(int page, int size, Authentication connectedUser);
+
+    BookDto updateBookById(Long id, BookRequest bookRequest, Authentication connectedUser);
+
+    BookDto deleteBookById(Long id, Authentication connectedUser);
 }

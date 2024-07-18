@@ -53,4 +53,27 @@ public class BookController {
                 .body(new ResponseObject("success", books));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject> updateBook(
+            @PathVariable Long id,
+            @RequestBody BookRequest bookRequest,
+            Authentication connectedUser
+    ) {
+        BookDto bookDto = bookService.updateBookById(id, bookRequest, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", bookDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseObject> deleteBook(
+            @PathVariable Long id,
+            Authentication connectedUser
+    ) {
+        BookDto bookDto = bookService.deleteBookById(id, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", bookDto));
+    }
+
 }

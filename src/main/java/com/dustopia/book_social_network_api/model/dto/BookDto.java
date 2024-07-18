@@ -6,6 +6,7 @@ public record BookDto(
         String synopsis,
         String bookCoverUrl,
         String user,
-        Double rate
+        Double rate,
+        boolean isShareable
 ) {
 }

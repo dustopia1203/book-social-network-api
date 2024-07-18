@@ -44,4 +44,18 @@ public class UserController {
                 .body(new ResponseObject("success", books));
     }
 
+    @GetMapping("/purchased-books")
+    public ResponseEntity<ResponseObject> getAllPurchasedBooks(
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size,
+            Authentication connectedUser
+    ) {
+        PageData<BookDto> books = bookService.findAllPurchasedBooks(page, size, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", books));
+    }
+
+
+
 }
