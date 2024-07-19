@@ -16,8 +16,12 @@ import com.dustopia.book_social_network_api.model.request.BookRequest;
 import com.dustopia.book_social_network_api.repository.BookTransactionRepository;
 import com.dustopia.book_social_network_api.security.CustomUserDetails;
 import com.dustopia.book_social_network_api.service.BookService;
+import com.google.api.client.http.InputStreamContent;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,8 +31,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +49,11 @@ public class BookServiceImpl implements BookService {
     private final BookMapper bookMapper;
 
     private final Cloudinary cloudinary;
+
+    private final Drive drive;
+
+    @Value("${google-api.drive.folder-id}")
+    private String FOLDER_ID;
 
     @Override
     public BookDto addBook(BookRequest bookRequest, Authentication connectedUser) {
@@ -172,6 +185,40 @@ public class BookServiceImpl implements BookService {
             return bookMapper.toBookDto(book);
         } catch (IOException e) {
             throw new CloudinaryUploadException("Image uploader service occurred error " + e.getMessage());
+        }
+    }
+
+    @Override
+    public BookDto uploadBook(Long id, MultipartFile file, Authentication connectedUser) {
+        User user = ((CustomUserDetails) connectedUser.getPrincipal()).getUser();
+        Book book = bookRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book is not found with id " + id));
+        if (!user.getId().equals(book.getUser().getId())) {
+            throw new PermissionDeniedAccessException("Current user don't have permission to do this action");
+        }
+        try {
+            if (book.getUrl() != null) {
+                String regex = ".*/([^/?]+).*";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(book.getUrl());
+                if (matcher.matches()) {
+                    System.out.println(matcher.group(1));
+                    drive.files().delete(matcher.group(1)).execute();
+                }
+            }
+            File fileMetadata = new File();
+            fileMetadata.setName(file.getOriginalFilename());
+            fileMetadata.setParents(Collections.singletonList(FOLDER_ID));
+            InputStream inputStream = file.getInputStream();
+            File driveFile = drive.files().create(fileMetadata, new InputStreamContent("application/pdf", inputStream))
+                    .setFields("id")
+                    .execute();
+            book.setUrl("https://drive.google.com/file/d/" + driveFile.getId());
+            bookRepository.save(book);
+            return bookMapper.toBookDto(book);
+        } catch (IOException exception) {
+            throw new RuntimeException("File upload invalid");
         }
     }
 

@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/books")
 @RequiredArgsConstructor
@@ -106,10 +108,22 @@ public class BookController {
     @PostMapping("/{id}/upload-cover")
     public ResponseEntity<ResponseObject> uploadBookCover(
             @PathVariable Long id,
-            @RequestParam("file")MultipartFile file,
+            @RequestParam("file") MultipartFile file,
             Authentication connectedUser
     ) {
         BookDto bookDto = bookService.uploadBookCover(id, file, connectedUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ResponseObject("success", bookDto));
+    }
+
+    @PostMapping("/{id}/upload")
+    public ResponseEntity<ResponseObject> uploadBook(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            Authentication connectedUser
+    ) {
+        BookDto bookDto = bookService.uploadBook(id, file, connectedUser);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ResponseObject("success", bookDto));

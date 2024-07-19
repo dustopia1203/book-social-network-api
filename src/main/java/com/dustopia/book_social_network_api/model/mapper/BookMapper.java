@@ -22,10 +22,12 @@ public class BookMapper {
 
     public BookDto toBookDto(Book book) {
         return new BookDto(
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getSynopsis(),
                 book.getBookCoverUrl(),
+                book.getUrl(),
                 book.getUser().getFullName(),
                 book.getRate(),
                 book.isShareable()
@@ -35,10 +37,12 @@ public class BookMapper {
     public BookDto toBookDto(BookTransaction bookTransaction) {
         Book book = bookTransaction.getBook();
         return new BookDto(
+                book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
                 book.getSynopsis(),
                 book.getBookCoverUrl(),
+                book.getUrl(),
                 book.getUser().getFullName(),
                 book.getRate(),
                 book.isShareable()
