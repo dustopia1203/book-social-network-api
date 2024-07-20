@@ -224,6 +224,9 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book is not found with id " + id));
+        if (book.getUrl().isEmpty()) {
+            throw new BookUnavailableException("Book hasn't upload yet");
+        }
         if (!user.getId().equals(book.getUser().getId())
                 && !user.getRole().equals("ADMIN")
                 && !bookTransactionRepository.isPurchased(user, book)
