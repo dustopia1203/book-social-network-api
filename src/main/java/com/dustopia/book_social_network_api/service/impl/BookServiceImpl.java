@@ -22,6 +22,7 @@ import com.google.api.services.drive.model.File;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -199,13 +201,7 @@ public class BookServiceImpl implements BookService {
         }
         try {
             if (book.getUrl() != null) {
-                String regex = ".*/([^/?]+).*";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(book.getUrl());
-                if (matcher.matches()) {
-                    System.out.println(matcher.group(1));
-                    drive.files().delete(matcher.group(1)).execute();
-                }
+                drive.files().delete(extractGGDriveBookId(book.getUrl())).execute();
             }
             File fileMetadata = new File();
             fileMetadata.setName(file.getOriginalFilename());
@@ -220,6 +216,49 @@ public class BookServiceImpl implements BookService {
         } catch (IOException exception) {
             throw new RuntimeException("File upload invalid");
         }
+    }
+
+    @Override
+    public ByteArrayResource downloadBook(Long id, Authentication connectedUser) {
+        User user = ((CustomUserDetails) connectedUser.getPrincipal()).getUser();
+        Book book = bookRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book is not found with id " + id));
+        if (!user.getId().equals(book.getUser().getId())
+                && !user.getRole().equals("ADMIN")
+                && !bookTransactionRepository.existsByUserAndBook(user, book)
+        ) {
+            throw new PermissionDeniedAccessException("Current user don't have permission to download this book");
+        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            drive.files().get(extractGGDriveBookId(book.getUrl())).executeMediaAndDownloadTo(outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new ByteArrayResource(outputStream.toByteArray());
+    }
+
+    @Override
+    public File getFileInfo(Long id) {
+        Book book = bookRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book is not found with id " + id));
+        try {
+            return drive.files().get(extractGGDriveBookId(book.getUrl())).execute();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String extractGGDriveBookId(String bookUrl) {
+        String regex = ".*/([^/?]+).*";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(bookUrl);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 
 }

@@ -1,20 +1,22 @@
 package com.dustopia.book_social_network_api.controller;
 
 import com.dustopia.book_social_network_api.model.dto.BookDto;
+import com.dustopia.book_social_network_api.model.request.BookRequest;
 import com.dustopia.book_social_network_api.model.response.PageData;
 import com.dustopia.book_social_network_api.model.response.ResponseObject;
-import com.dustopia.book_social_network_api.model.request.BookRequest;
 import com.dustopia.book_social_network_api.service.BookService;
+import com.google.api.services.drive.model.File;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/books")
@@ -127,6 +129,20 @@ public class BookController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new ResponseObject("success", bookDto));
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<ByteArrayResource> downloadBook(
+            @PathVariable Long id,
+            Authentication connectedUser
+    ) {
+        ByteArrayResource resource = bookService.downloadBook(id, connectedUser);
+        File file = bookService.getFileInfo(id);
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .contentType(MediaType.parseMediaType(file.getMimeType()))
+                .body(resource);
     }
 
 }

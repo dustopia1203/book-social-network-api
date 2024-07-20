@@ -3,6 +3,8 @@ package com.dustopia.book_social_network_api.service;
 import com.dustopia.book_social_network_api.model.dto.BookDto;
 import com.dustopia.book_social_network_api.model.response.PageData;
 import com.dustopia.book_social_network_api.model.request.BookRequest;
+import com.google.api.services.drive.model.File;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,4 +31,8 @@ public interface BookService {
     BookDto uploadBookCover(Long id, MultipartFile file, Authentication connectedUser);
 
     BookDto uploadBook(Long id, MultipartFile file, Authentication connectedUser);
+
+    ByteArrayResource downloadBook(Long id, Authentication connectedUser);
+
+    File getFileInfo(Long id);
 }
