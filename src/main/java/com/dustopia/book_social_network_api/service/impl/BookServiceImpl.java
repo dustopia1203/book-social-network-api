@@ -226,7 +226,7 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new EntityNotFoundException("Book is not found with id " + id));
         if (!user.getId().equals(book.getUser().getId())
                 && !user.getRole().equals("ADMIN")
-                && !bookTransactionRepository.existsByUserAndBook(user, book)
+                && !bookTransactionRepository.isPurchased(user, book)
         ) {
             throw new PermissionDeniedAccessException("Current user don't have permission to download this book");
         }

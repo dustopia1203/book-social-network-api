@@ -34,6 +34,10 @@ public class BookTransaction {
     @JsonBackReference
     private Book book;
 
+    private String orderId;
+
+    private boolean isPurchased;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;
